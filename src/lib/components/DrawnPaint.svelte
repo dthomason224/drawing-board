@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { offset } from "$lib/stores";
+	import { offset, scale, scaleOffset } from "$lib/stores";
     import type { Point } from "$lib/types";
 	import { Layer, type Render } from "svelte-canvas";
 
@@ -17,7 +17,7 @@
         context.strokeStyle = color;
         context.lineWidth = lineWidth;
         context.beginPath();
-        context.setTransform(1, 0, 0, 1, ...$offset);
+        context.setTransform($scale, 0, 0, $scale, $offset[0] * $scale - $scaleOffset[0], $offset[1] * $scale - $scaleOffset[1]);
         context.moveTo(...points[0]);
         for (let i = 0; i < points.length; i++) {
             const element = points[i];

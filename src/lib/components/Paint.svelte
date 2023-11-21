@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Layer, type Render } from "svelte-canvas";
 	import type { Point } from "$lib/types";
-	import { offset } from "$lib/stores";
+	import { offset, scale, scaleOffset } from "$lib/stores";
 	
 	export let startPoint: Point;
 	export let endPoint: Point;
@@ -19,7 +19,7 @@
 		context.strokeStyle = color;
 		context.lineWidth = lineWidth;
 		context.beginPath();
-        context.setTransform(1, 0, 0, 1, ...$offset);
+        context.setTransform($scale, 0, 0, $scale, $offset[0] * $scale - $scaleOffset[0], $offset[1] * $scale - $scaleOffset[1]);
 		context.moveTo(...startPoint);
 		context.lineTo(...endPoint);
 		context.stroke();

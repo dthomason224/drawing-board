@@ -12,6 +12,8 @@ export const lineColor: Writable<string> = writable("black");
 export const backgroundCanvas: Writable<Canvas> = writable();
 
 export const offset: Writable<Point> = writable([0, 0]);
+export const scaleOffset: Writable<Point> = writable([0, 0]);
+export const scale: Writable<number> = writable(1);
 
 export const dragging: Writable<boolean> = writable(false);
 export const clearFrames: Writable<boolean> = writable(false);

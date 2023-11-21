@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { popup, TreeView, type PopupSettings, TreeViewItem, RangeSlider } from "@skeletonlabs/skeleton";
-	import { drawSelection, options, lineWidth, lineColor } from "$lib/stores";
+	import { drawSelection, options, lineWidth, lineColor, scale } from "$lib/stores";
     import ColorPicker from "svelte-awesome-color-picker";
 	import ColorPickerWrapper from "$lib/components/ColorPickerWrapper.svelte";
+    import { Minus, Plus } from "radix-icons-svelte";
+	import { onZoom } from "$lib/zoom";
 
     let sliderMax = 25;
 
@@ -18,6 +20,17 @@
 </script>
 
 <div class="container mx-auto flex flex-row justify-center gap-5">
+    <div class="flex gap-6 p-3 variant-filled">
+        <button type="button" class="btn-icon btn-icon-sm" on:click={() => onZoom(-0.1)}>
+            <Minus />
+        </button>
+        <button type="button" class="btn-icon btn-icon-sm" on:click={() => onZoom(0.1)}>
+            <Plus />
+        </button>
+        <button type="button" class="btn btn-sm" on:click={() => scale.set(1)}>
+            {new Intl.NumberFormat("en-GB", { style: "percent"}).format($scale)}
+        <button/>
+    </div>
     <ColorPicker bind:hex={$lineColor} canChangeMode={false} components={{wrapper: ColorPickerWrapper}} /> 
     <div class="flex gap-2 p-3">
         <button class="btn btn-md variant-filled-primary" use:popup={popupMenu}>shape</button> 
@@ -25,10 +38,6 @@
     <div class="flex gap-2 p-3">
         <button class="btn btn-md variant-filled-primary">upload</button>
         <button class="btn btn-md variant-filled-primary">download</button>
-    </div>
-    <div class="flex gap-2 p-3">
-        <button class="btn btn-md variant-filled-primary">save</button>
-        <button class="btn btn-md variant-filled-primary">account</button>
     </div>
 </div>
 
