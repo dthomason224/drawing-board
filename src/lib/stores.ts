@@ -9,7 +9,6 @@ export const lineWidth: Writable<number> = writable(10);
 
 export const lineColor: Writable<string> = writable("#000000");
 
-export const normalBackgroundCanvas: Writable<HTMLCanvasElement> = writable();
 export const backgroundCanvas: Writable<Canvas> = writable();
 
 export const offset: Writable<Point> = writable([0, 0]);

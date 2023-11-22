@@ -6,7 +6,6 @@
     export let imageUrl: string;
 
     let img: HTMLImageElement;
-    let imgComplete: boolean = false;
 
     let render: Render;
 

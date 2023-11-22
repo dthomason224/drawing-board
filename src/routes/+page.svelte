@@ -2,10 +2,9 @@
 	import DrawnPaint from "$lib/components/DrawnPaint.svelte"
   	import { Canvas } from "svelte-canvas";
 	import type { DrawnObject, Point } from "$lib/types";
-	import { backgroundCanvas, clearFrames, dragging, drawSelection, drawnObjects, lineColor, lineWidth, normalBackgroundCanvas, offset, options, scale, scaleOffset } from "$lib/stores";
+	import { backgroundCanvas, clearFrames, dragging, drawSelection, drawnObjects, lineColor, lineWidth, offset, options, scale, scaleOffset } from "$lib/stores";
 	import { onZoom } from "$lib/zoom";
-	import { onMount } from "svelte";
-
+	
 	let startPoint: Point = [Infinity, Infinity];
 	let endPoint: Point = [Infinity, Infinity];
 
@@ -13,10 +12,6 @@
 
 	let points: Point[] = [];
 	let heldKeys: string[] = [];
-
-	onMount(() => {
-		normalBackgroundCanvas.set($backgroundCanvas.getCanvas());
-	});
 
 	$: {
 		if ($backgroundCanvas) {
@@ -132,6 +127,14 @@
 		removeEventListener("mouseup", handleMouseUp);
 	}
 
+	function handleCanvasLeave() {
+		if ($drawSelection.value === "Paint") {
+			$dragging = false;
+			endPoint = [Infinity, Infinity];
+			startPoint = [Infinity, Infinity];
+		}
+	}
+
 	function handleKeyDown(e: KeyboardEvent) {
 		e.preventDefault();
 
@@ -152,9 +155,10 @@
 
 	function zoomOrPanCanvas(e: WheelEvent) {
 		e.preventDefault();
+		e.stopPropagation();
 		
 		if (heldKeys.includes("Control")) {
-			onZoom(e.deltaY * -0.01);
+			onZoom(e.deltaY * -.001);
 		}
 		else {
 			offset.update(value => [value[0] , value[1] - e.deltaY]);
@@ -173,10 +177,10 @@
 
 <svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} on:wheel={zoomOrPanCanvas}/>
 
-<div class="relative h-full w-full bg-white">
+<div class="relative h-full w-full">
     <Canvas 
 		bind:this={$backgroundCanvas}
-		class="absolute"
+		class="absolute bg-white"
 	>
 		{#if $drawnObjects}
 			{#each $drawnObjects as drawnObject}
@@ -189,7 +193,8 @@
 		on:mousedown={handleMouseDown}
 		on:mousemove={handleMouseMove}
 		on:mouseup={handleMouseUp}
-		on:wheel={zoomOrPanCanvas}
+		on:wheel={(e) => e.preventDefault()}
+		on:mouseleave={handleCanvasLeave}
 		class="absolute"
 	>
 		{#if $drawSelection.value === "Paint" || $drawSelection.value === "Rectangle"}
