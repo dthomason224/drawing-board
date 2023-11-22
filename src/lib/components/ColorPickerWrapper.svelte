@@ -2,7 +2,6 @@
     export let wrapper: HTMLDivElement;
     export let isOpen: boolean;
     export let isPopup: boolean;
-    export let toRight: boolean;
 </script>
 
 <div
