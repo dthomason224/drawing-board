@@ -14,6 +14,7 @@
 
 	$: render = ({ context }) => {
 		context.save();
+		
 		context.lineCap = "round";
 		context.lineJoin = "round";
 		context.strokeStyle = color;

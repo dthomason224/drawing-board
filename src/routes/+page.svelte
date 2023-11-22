@@ -1,27 +1,29 @@
 <script lang="ts">
 	import DrawnPaint from "$lib/components/DrawnPaint.svelte"
   	import { Canvas } from "svelte-canvas";
-	import type { Point, Shape } from "$lib/types";
-	import { clearFrames, dragging, drawSelection, lineColor, lineWidth, offset, options, scale, scaleOffset } from "$lib/stores";
+	import type { DrawnObject, Point } from "$lib/types";
+	import { backgroundCanvas, clearFrames, dragging, drawSelection, drawnObjects, lineColor, lineWidth, normalBackgroundCanvas, offset, options, scale, scaleOffset } from "$lib/stores";
 	import { onZoom } from "$lib/zoom";
+	import { onMount } from "svelte";
 
-	let backgroundCanvas: Canvas;
-	
 	let startPoint: Point = [Infinity, Infinity];
 	let endPoint: Point = [Infinity, Infinity];
 
 	let radius: number = Infinity;
 
 	let points: Point[] = [];
-	let shapes: Shape[] = [];
 	let heldKeys: string[] = [];
 
+	onMount(() => {
+		normalBackgroundCanvas.set($backgroundCanvas.getCanvas());
+	});
+
 	$: {
-		if (backgroundCanvas) {
-			const scaledWidth: number = backgroundCanvas.getCanvas().width * $scale;
-			const scaledHeight: number = backgroundCanvas.getCanvas().height * $scale;
+		if ($backgroundCanvas) {
+			const scaledWidth: number = $backgroundCanvas.getCanvas().width * $scale;
+			const scaledHeight: number = $backgroundCanvas.getCanvas().height * $scale;
 	
-			const newScaleOffset: Point = [(scaledWidth - backgroundCanvas.getCanvas().width) / 2, (scaledHeight - backgroundCanvas.getCanvas().height) / 2];
+			const newScaleOffset: Point = [(scaledWidth - $backgroundCanvas.getCanvas().width) / 2, (scaledHeight - $backgroundCanvas.getCanvas().height) / 2];
 			scaleOffset.set(newScaleOffset);
 		}
 	}
@@ -61,7 +63,6 @@
 				case "Paint":
 					endPoint = findMousePos(e);
 					points.push(endPoint);
-					console.log("painting");
 					
 					break;
 				case "Rectangle":
@@ -90,7 +91,7 @@
 		$dragging = false;
 
 		if ($drawSelection.value !== "Pan" && $drawSelection.component) {
-			const newShape: Shape = {
+			const newShape: DrawnObject = {
 				component: $drawSelection.component,
 				props:{
 					color: $lineColor,
@@ -116,9 +117,9 @@
 			}
 			console.log(newShape);
 		
-			shapes.push(newShape);
+			$drawnObjects.push(newShape);
 		
-			shapes = shapes;
+			$drawnObjects = $drawnObjects;
 
 			points = [];
 		}
@@ -133,10 +134,8 @@
 
 	function handleKeyDown(e: KeyboardEvent) {
 		e.preventDefault();
-		const key = e.key;
 
-		console.log(key);
-		
+		const key = e.key;
 
 		if (!heldKeys.includes(key)) {
 			heldKeys = [...heldKeys, key];
@@ -145,27 +144,24 @@
 
 	function handleKeyUp(e: KeyboardEvent) {
 		e.preventDefault();
-		const key = e.key;
 
-		console.log(key);
-		
+		const key = e.key;
 
 		heldKeys = heldKeys.filter((heldKey) => heldKey !== key);
 	}
 
 	function zoomOrPanCanvas(e: WheelEvent) {
 		e.preventDefault();
-		console.log(heldKeys[0]);
 		
 		if (heldKeys.includes("Control")) {
 			onZoom(e.deltaY * -0.01);
 		}
+		else {
+			offset.update(value => [value[0] , value[1] - e.deltaY]);
+		}
 	}
 
 	function findMousePos(e: MouseEvent) {
-		console.log("x offset: " + e.clientX + "-" + $offset[0] + "=" + (e.clientX - $offset[0])) ;
-		console.log("y offset: " + e.clientY + "-" + $offset[1] + "=" + (e.clientY - $offset[1])) ;
-
 		return [(e.clientX - $offset[0] * $scale + $scaleOffset[0]) / $scale  , (e.clientY - $offset[1] * $scale + $scaleOffset[1]) / $scale] as Point;
 	}
 
@@ -175,16 +171,16 @@
 		
 </script>
 
+<svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} on:wheel={zoomOrPanCanvas}/>
+
 <div class="relative h-full w-full bg-white">
     <Canvas 
-		bind:this={backgroundCanvas}
+		bind:this={$backgroundCanvas}
 		class="absolute"
 	>
-		{#if shapes}
-			{#each shapes as shape}
-			
-				<svelte:component this={shape.component} {...shape.props}> </svelte:component>
-			
+		{#if $drawnObjects}
+			{#each $drawnObjects as drawnObject}
+				<svelte:component this={drawnObject.component} {...drawnObject.props}> </svelte:component>
 			{/each}
 		{/if}
     </Canvas>
@@ -194,8 +190,6 @@
 		on:mousemove={handleMouseMove}
 		on:mouseup={handleMouseUp}
 		on:wheel={zoomOrPanCanvas}
-		on:keydown={handleKeyDown}
-		on:keyup={handleKeyUp}
 		class="absolute"
 	>
 		{#if $drawSelection.value === "Paint" || $drawSelection.value === "Rectangle"}

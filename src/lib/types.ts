@@ -7,14 +7,15 @@ export interface DrawOption {
     component?: typeof SvelteComponent<any>;
 }
 
-export interface Shape {
+export interface DrawnObject {
     component: typeof SvelteComponent<any>;
     props: {
         startPoint?: Point;
         endPoint?: Point;
-        color: string;
-        lineWidth: number;
+        color?: string;
+        lineWidth?: number;
         radius?: number;
         points?: Point[];
+        imageUrl?: string;
     };
 }
